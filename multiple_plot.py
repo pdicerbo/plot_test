@@ -57,8 +57,8 @@ def main():
         print   '\t    5      H2 molecular profile as a function of the pressure, given an SPH density (converging Tc)'
         print   '\t    6      make the plots'
         print   '\t    whatever else             Exit'
-        #num = int(raw_input("\n\t Select Action :> "))
-        num = 5
+        num = int(raw_input("\n\t Select Action :> "))
+        #num = 5
         if num in options.keys():
             eval(options[num])()
             num = 10
@@ -133,7 +133,7 @@ def plot():
     cbar = plt.colorbar(figura,format='%3.1f')
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('H$_{2}$ fraction',fontsize=20)
-    plt.savefig('fraction_H2.jpg')
+    plt.savefig('fraction_H2.pdf')
     plt.close('all')
     print '\n\t fraction_H2.jpg done\n'
 
@@ -159,6 +159,11 @@ def plot():
     cbar = plt.colorbar(figura,format='%3.1f')
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('tcool   [Gyr]',fontsize=20)
-    plt.savefig('fraction_H2_tcool.jpg')
+    plt.savefig('fraction_H2_tcool.pdf')
     plt.close('all')
     print '\n\t fraction_H2_tcool.jpg done\n'
+
+
+
+
+main()
