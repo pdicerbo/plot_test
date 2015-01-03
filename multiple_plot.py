@@ -106,6 +106,11 @@ def LoadMatrix(filename=False):
 
 def get_matrix():
     global Dens ; global T ; global FH2 ; global t_cool
+    if T==None or Dens==None or FH2==None:
+    # load the matrix
+	    LoadMatrix(filename=matrix_Logdelta_LogT_H2)
+    if t_cool==None:
+        LoadMatrix(filename=matrix_Logdelta_LogT_H2_tcool)
 
     fname = 'time_evolution_log10P4.494.dat'
     matrix = np.loadtxt(fname,comments='#') #contiene: t - M_a - M_h2 - Log10Rho_a - Log10T - frac_h2 - tcool
@@ -114,6 +119,7 @@ def get_matrix():
     time = matrix[0,:]
     rho_atom = matrix[3,:]
     t_atom = matrix[4,:]
+    tmat = FH2
 
     #check
     # print '\n\ttime array\n'
@@ -123,6 +129,34 @@ def get_matrix():
     # print '\n\ttemperature array\n'
     # print t_atom
     # print '\n\tdone\n'
+    #d = 0
+    # tmp = 0
+    d = Dens.size
+    b = time.size
+    count = 0.
+    time_def = 0.
+    lst_dns = np.arange(0, d, 1)
+    lst_tmp = np.arange(0, d, 1)
+    big_list = np.arange(0, b, 1)
+    gap = (Dens[1] - Dens[0])/2.
+    for i in lst_dns:
+        for j in lst_tmp:
+            for k in big_list:
+                if np.abs(Dens[i] - rho_atom[k]) <= gap and np.abs(T[i] - t_atom[k]) <= gap:
+                    time_def += time[k]
+                    count += 1.
+            if count < 5e-1:
+                    count = 1.
+            tmat[j][j] = time_def/count
+            time_def = 0.
+            count = 0.
+
+    fp = open('phase_space_path.dat','w')
+    np.savetxt(fp, tmat, fmt='%e', delimiter='\t', newline='\n')
+    fp.flush()
+    fp.close()
+
+    print '\n\tFinally done!\n'
 
 
 def plot():
