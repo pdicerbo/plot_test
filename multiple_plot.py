@@ -45,7 +45,7 @@ t_cool     = None          # dimension 50x50
 
 def main():
     # functions to call
-    options = {1:'OneT',2:'OneDelta',3:'Fit_T_Delta',4:'MolecularProfileI',5:'MolecularProfileTc',6:'plot'}
+    options = {1:'OneT',2:'OneDelta',3:'Fit_T_Delta',4:'MolecularProfileI',5:'MolecularProfileTc',6:'plot', 7:'get_matrix'}
     num=1
     while num in range(1,7):
         # select what you want to do...
@@ -56,12 +56,13 @@ def main():
         print   '\t    4      H2 molecular profile as a function of the pressure, given an SPH density (istantaneous)'
         print   '\t    5      H2 molecular profile as a function of the pressure, given an SPH density (converging Tc)'
         print   '\t    6      make the plots'
+        print   '\t    7      history plots'
         print   '\t    whatever else             Exit'
         num = int(raw_input("\n\t Select Action :> "))
         #num = 5
         if num in options.keys():
             eval(options[num])()
-            num = 10
+            # num = 10
 
     print '\n\t END OF GAME!!!\n'
 
@@ -103,6 +104,26 @@ def LoadMatrix(filename=False):
         raise IOError('\n\t It seems that ',filename,' does not exist\n')
 
 
+def get_matrix():
+    global Dens ; global T ; global FH2 ; global t_cool
+
+    fname = 'time_evolution_log10P4.494.dat'
+    matrix = np.loadtxt(fname,comments='#') #contiene: t - M_a - M_h2 - Log10Rho_a - Log10T - frac_h2 - tcool
+    matrix = matrix.T
+
+    time = matrix[0,:]
+    rho_atom = matrix[3,:]
+    t_atom = matrix[4,:]
+
+    #check
+    # print '\n\ttime array\n'
+    # print time
+    # print '\n\tdensity array\n'
+    # print rho_atom
+    # print '\n\ttemperature array\n'
+    # print t_atom
+    # print '\n\tdone\n'
+
 
 def plot():
     """
@@ -135,7 +156,7 @@ def plot():
     cbar.set_label('H$_{2}$ fraction',fontsize=20)
     plt.savefig('fraction_H2.pdf')
     plt.close('all')
-    print '\n\t fraction_H2.jpg done\n'
+    print '\n\t fraction_H2.pdf done\n'
 
     # second plot
     global matrix_Logdelta_LogT_H2_tcool
@@ -161,7 +182,7 @@ def plot():
     cbar.set_label('tcool   [Gyr]',fontsize=20)
     plt.savefig('fraction_H2_tcool.pdf')
     plt.close('all')
-    print '\n\t fraction_H2_tcool.jpg done\n'
+    print '\n\t fraction_H2_tcool.pdf done\n'
 
 
 
