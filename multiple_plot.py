@@ -44,6 +44,9 @@ FH2        = None          # dimension 50x50
 t_cool     = None          # dimension 50x50
 
 def main():
+
+    plot_def('phase_space_path.dat')
+
     # functions to call
     options = {1:'OneT',2:'OneDelta',3:'Fit_T_Delta',4:'MolecularProfileI',5:'MolecularProfileTc',6:'plot', 7:'get_matrix'}
     num=1
@@ -147,7 +150,7 @@ def get_matrix():
                     count += 1.
             if count < 5e-1:
                     count = 1.
-            tmat[i][j] = time_def/count
+            tmat[j][i] = time_def/count
             time_def = 0.
             count = 0.
 
@@ -157,6 +160,73 @@ def get_matrix():
     fp.close()
     plot_newmatrix('phase_space_path.dat')
     print '\n\tFinally done!\n'
+
+
+def plot_def(fname):
+    """
+    This function makes the following plots:
+    - T vs Density and as color the H2Fraction
+    - T vs Density and as color the cooling time
+    """
+
+    # first plot
+    global matrix_Logdelta_LogT_H2
+    LoadMatrix(filename=matrix_Logdelta_LogT_H2)
+    global T ; global Dens ; global FH2
+
+    H2 = FH2
+    H2[H2 > 0.] = np.log10(H2[H2 > 0.])
+    v_min = -6
+    v_max = -2.
+    H2[H2 == 0.] = v_min
+    H2[H2 > v_max] = v_max
+    H2[H2 < v_min] = v_min
+    numlev = 15
+    dmag0 = (v_max - v_min) / float(numlev)
+    levels0 = np.arange(numlev) * dmag0 + v_min
+    # plt.figure()
+    # figura = plt.contourf(Dens,T,H2,levels0,extend='both')
+    # #figura0 = plt.contour(Dens,T,H2,levels,colors = ('k',),linewidths = (0.3,))
+    # plt.title('H$_{2}$ fraction')
+    # plt.xlabel('log10 $\delta$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+    # cbar = plt.colorbar(figura,format='%3.1f')
+    # cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
+    # cbar.set_label('H$_{2}$ fraction',fontsize=20)
+    # plt.savefig('fraction_H2.pdf')
+    # plt.close('all')
+    # print '\n\t fraction_H2.pdf done\n'
+
+    path = np.loadtxt(fname,comments='#')
+    #H2 = FH2
+    path[path > 0.] = np.log10(path[path > 0.])
+    vmin = 0.
+    vmax = 6.5
+    path[path == 0.] = vmin
+    path[path > vmax] = vmax
+    path[path < vmin] = vmin
+    nlev = 6
+    dmag = (vmax - vmin) / float(nlev)
+    levels = np.arange(nlev) * dmag + vmin
+
+    plt.figure()
+    figura = plt.contourf(Dens,T,path,levels,extend='both')
+    #figura0 = plt.contour(Dens,T,path,levels,colors = ('k',),linewidths = (0.3,))
+    plt.title('Path')
+    plt.xlabel('log10 $\delta$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+    cbar = plt.colorbar(figura,format='%3.1f')
+    cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
+    cbar.set_label('time',fontsize=20)
+
+    figura = plt.contourf(Dens,T,H2,levels0,extend='both', alpha=0.5)
+    cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal')
+    cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
+    cbar.set_label('H$_{2}$ fraction',fontsize=20)
+
+    plt.savefig('path.pdf')
+    plt.close('all')
+
+    print '\n\t path.pdf done\n'
+
 
 
 def plot_newmatrix(fname):
@@ -174,7 +244,7 @@ def plot_newmatrix(fname):
     #H2 = FH2
     path[path > 0.] = np.log10(path[path > 0.])
     vmin = 0.
-    vmax = 6.5.
+    vmax = 6.5
     path[path == 0.] = vmin
     path[path > vmax] = vmax
     path[path < vmin] = vmin
