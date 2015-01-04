@@ -2,6 +2,7 @@ import numpy as np
 import os
 from bisect import bisect_left # for BilinearInterpolation
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
 matrix_Logdelta_LogT_H2_tcool = 'matrix_modif_Logdelta_LogT_tcool.dat'
@@ -61,8 +62,8 @@ def main():
         print   '\t    6      make the plots'
         print   '\t    7      history plots'
         print   '\t    whatever else             Exit'
-        num = int(raw_input("\n\t Select Action :> "))
-        #num = 5
+        #num = int(raw_input("\n\t Select Action :> "))
+        num = 56
         if num in options.keys():
             eval(options[num])()
             # num = 10
@@ -209,16 +210,20 @@ def plot_def(fname):
     levels = np.arange(nlev) * dmag + vmin
 
     plt.figure()
+
     figura = plt.contourf(Dens,T,path,levels,extend='both')
     #figura0 = plt.contour(Dens,T,path,levels,colors = ('k',),linewidths = (0.3,))
     plt.title('Path')
-    plt.xlabel('log10 $\delta$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+
+    plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+
     cbar = plt.colorbar(figura,format='%3.1f')
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('time',fontsize=20)
 
-    figura = plt.contourf(Dens,T,H2,levels0,extend='both', alpha=0.5)
-    cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal')
+    figura = plt.contour(Dens,T,H2,levels0,extend='both', linewidths=0.8, cmap=cm.gray, alpha=0.5)
+    cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal', shrink=0.7)
+    #cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
     cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
     cbar.set_label('H$_{2}$ fraction',fontsize=20)
 
