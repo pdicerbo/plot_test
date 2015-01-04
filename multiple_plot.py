@@ -142,12 +142,12 @@ def get_matrix():
     for i in lst_dns:
         for j in lst_tmp:
             for k in big_list:
-                if np.abs(Dens[i] - rho_atom[k]) <= gap and np.abs(T[i] - t_atom[k]) <= gap:
+                if np.abs(Dens[i] - rho_atom[k]) <= gap and np.abs(T[j] - t_atom[k]) <= gap:
                     time_def += time[k]
                     count += 1.
             if count < 5e-1:
                     count = 1.
-            tmat[j][j] = time_def/count
+            tmat[i][j] = time_def/count
             time_def = 0.
             count = 0.
 
@@ -155,8 +155,43 @@ def get_matrix():
     np.savetxt(fp, tmat, fmt='%e', delimiter='\t', newline='\n')
     fp.flush()
     fp.close()
-
+    plot_newmatrix('phase_space_path.dat')
     print '\n\tFinally done!\n'
+
+
+def plot_newmatrix(fname):
+    """
+    This function makes the following plots:
+    - T vs Density and as color the H2Fraction
+    - T vs Density and as color the cooling time
+    """
+
+    # first plot
+    global matrix_Logdelta_LogT_H2
+    LoadMatrix(filename=matrix_Logdelta_LogT_H2)
+    global T ; global Dens ; global FH2
+    path = np.loadtxt(fname,comments='#')
+    #H2 = FH2
+    path[path > 0.] = np.log10(path[path > 0.])
+    vmin = 0.
+    vmax = 6.5.
+    path[path == 0.] = vmin
+    path[path > vmax] = vmax
+    path[path < vmin] = vmin
+    nlev = 15
+    dmag = (vmax - vmin) / float(nlev)
+    levels = np.arange(nlev) * dmag + vmin
+    plt.figure()
+    figura = plt.contourf(Dens,T,path,levels,extend='both')
+    figura0 = plt.contour(Dens,T,path,levels,colors = ('k',),linewidths = (0.3,))
+    plt.title('Path')
+    plt.xlabel('log10 $\delta$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+    cbar = plt.colorbar(figura,format='%3.1f')
+    cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
+    cbar.set_label('time',fontsize=20)
+    plt.savefig('path.pdf')
+    plt.close('all')
+    print '\n\t path.pdf done\n'
 
 
 def plot():
