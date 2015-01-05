@@ -46,7 +46,7 @@ t_cool     = None          # dimension 50x50
 
 def main():
 
-    plot_def('phase_space_path.dat.old')
+    plot_def('phase_space_path.dat')
 
     # functions to call
     options = {1:'OneT',2:'OneDelta',3:'Fit_T_Delta',4:'MolecularProfileI',5:'MolecularProfileTc',6:'plot', 7:'get_matrix'}
@@ -213,7 +213,7 @@ def plot_def(fname):
 
     plt.figure()
 
-    figura = plt.contourf(Dens,T,path,levels,extend='both')
+    figura = plt.contour(Dens,T,path,levels,extend='both', linewidths=0.3, cmap=cm.gray)
     #figura0 = plt.contour(Dens,T,path,levels,colors = ('k',),linewidths = (0.3,))
     plt.title('Path')
 
@@ -222,10 +222,12 @@ def plot_def(fname):
     cbar = plt.colorbar(figura,format='%3.1f')
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('time',fontsize=20)
-    figura = plt.contourf(Dens,T,path2,levels,extend='both', alpha=0.8)
-    figura = plt.contourf(Dens,T,path3,levels,extend='both', alpha=0.5)
+    # figura = plt.contour(Dens,T,path2,levels,extend='both', alpha=0.8)
+    figura = plt.contour(Dens,T,path2,levels,extend='both', linewidths=0.3, cmap=cm.gray)
+    figura = plt.contour(Dens,T,path3,levels,extend='both', linewidths=0.3, cmap=cm.gray)
 
-    figura = plt.contour(Dens,T,H2,levels0,extend='both', linewidths=0.8, cmap=cm.gray, alpha=0.5)
+    # figura = plt.contourf(Dens,T,H2,levels0,extend='both', linewidths=0.8, cmap=cm.gray, alpha=0.5)
+    figura = plt.contourf(Dens,T,H2,levels0,extend='both')
     cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal', shrink=0.7)
     #cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
     cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
