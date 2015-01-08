@@ -77,7 +77,7 @@ def main():
     fp.close()
 
     plot_def('total_PS_path.dat')
-    print '\n\tEXIT!\n'
+    print "\n\tEXIT!\n"
 
 def LoadMatrix(filename=False):
     """
