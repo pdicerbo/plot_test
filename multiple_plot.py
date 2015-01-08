@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import string
 from bisect import bisect_left # for BilinearInterpolation
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -50,30 +51,33 @@ PS_path    = [[0.]*50 for x in range(50)]
 
 def main():
     global PS_path
-    '''
-    lst = np.arange(500, 1500, 200)
-    lst2 = ['a', 'b', 'c', 'd', 'e']
-    i = 0
-    for n in lst:
-        lst2[i] = path_read+'t'+str(n)
-        i += 1
-    '''
     dirs = os.listdir(path_read)
     i = 0
     for a in dirs:
-        dirs[i] = path_read+'/'+a
+        dirs[i] = path_read + a
         i += 1
 
-    j = 0
+    wr = open('point.dat', 'w')
+
     for a in dirs:
         files = os.listdir(a)
-        for b in files:
-            get_matrix(a+'/'+b)
+        for name in files:
+            if string.count(name, 'time') != 0:
+                line = '%s\n'%(a + '/' + name)
+                wr.write(line)
+                wr.flush()
+                get_matrix(a+'/'+name)
+            else:
+                continue
 
+    wr.close()
     fp = open('total_phase_space_path.dat','w')
     np.savetxt(fp, PS_path, fmt='%e', delimiter='\t', newline='\n')
     fp.flush()
     fp.close()
+
+    plot_def('total_PS_path.dat')
+    print '\n\tEXIT!\n'
 
 def LoadMatrix(filename=False):
     """
@@ -126,8 +130,8 @@ def get_matrix(fname):
     matrix = matrix.T
 
     time = matrix[0,:]
-    rho_atom = matrix[3,:]
-    t_atom = matrix[4,:]
+    rho_atom = matrix[1,:]
+    t_atom = matrix[2,:]
     #tmat = FH2
 
     d = Dens.size
@@ -269,7 +273,7 @@ def plot_def(fname):
     nlev = 6
     dmag = (vmax - vmin) / float(nlev)
     levels = np.arange(nlev) * dmag + vmin
-
+    '''
     path2 = np.loadtxt('phase_space_path.dat.old',comments='#')
     path2[path2 > 0.] = np.log10(path2[path2 > 0.])
     path2[path2 == 0.] = vmin
@@ -281,7 +285,7 @@ def plot_def(fname):
     path3[path3 == 0.] = vmin
     path3[path3 > vmax] = vmax
     path3[path3 < vmin] = vmin
-
+    '''
     plt.figure()
 
     figura = plt.contour(Dens,T,path,levels,extend='both', linewidths=0.3, cmap=cm.gray)
@@ -294,8 +298,8 @@ def plot_def(fname):
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('time',fontsize=20)
     # figura = plt.contour(Dens,T,path2,levels,extend='both', alpha=0.8)
-    figura = plt.contour(Dens,T,path2,levels,extend='both', linewidths=0.3, cmap=cm.gray)
-    figura = plt.contour(Dens,T,path3,levels,extend='both', linewidths=0.3, cmap=cm.gray)
+    # figura = plt.contour(Dens,T,path2,levels,extend='both', linewidths=0.3, cmap=cm.gray)
+    # figura = plt.contour(Dens,T,path3,levels,extend='both', linewidths=0.3, cmap=cm.gray)
 
     # figura = plt.contourf(Dens,T,H2,levels0,extend='both', linewidths=0.8, cmap=cm.gray, alpha=0.5)
     figura = plt.contourf(Dens,T,H2,levels0,extend='both')
