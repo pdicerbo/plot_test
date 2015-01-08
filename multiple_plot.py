@@ -3,10 +3,13 @@ import os
 from bisect import bisect_left # for BilinearInterpolation
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from scipy.interpolate import griddata
+#from matplotlib.mlab import griddata
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
 matrix_Logdelta_LogT_H2_tcool = 'matrix_modif_Logdelta_LogT_tcool.dat'
 path_out                      = '/scratch2/dicerbo/plot_test/'
+path_read                     = '/home/dicerbo/output/scratch2/plot_test/toprint/'
 # global variables
 redshift          = 19.0
 Hubble            = 0.72
@@ -43,33 +46,34 @@ T          = None          # dimension 1x50
 Dens       = None          # dimension 1x50
 FH2        = None          # dimension 50x50
 t_cool     = None          # dimension 50x50
+PS_path    = [[0.]*50 for x in range(50)]
 
 def main():
+    global PS_path
+    '''
+    lst = np.arange(500, 1500, 200)
+    lst2 = ['a', 'b', 'c', 'd', 'e']
+    i = 0
+    for n in lst:
+        lst2[i] = path_read+'t'+str(n)
+        i += 1
+    '''
+    dirs = os.listdir(path_read)
+    i = 0
+    for a in dirs:
+        dirs[i] = path_read+'/'+a
+        i += 1
 
-    plot_def('phase_space_path.dat')
+    j = 0
+    for a in dirs:
+        files = os.listdir(a)
+        for b in files:
+            get_matrix(a+'/'+b)
 
-    # functions to call
-    options = {1:'OneT',2:'OneDelta',3:'Fit_T_Delta',4:'MolecularProfileI',5:'MolecularProfileTc',6:'plot', 7:'get_matrix'}
-    num=1
-    while num in range(1,7):
-        # select what you want to do...
-        print '\n\t    Select                    Action'
-        print   '\t    1      H2 fraction as a function of the overdensity at a fix T'
-        print   '\t    2      H2 fraction as a function of the temperature at a fixed overdensity'
-        print   '\t    3      H2 fraction given one temperature and one overdensity (fitted)'
-        print   '\t    4      H2 molecular profile as a function of the pressure, given an SPH density (istantaneous)'
-        print   '\t    5      H2 molecular profile as a function of the pressure, given an SPH density (converging Tc)'
-        print   '\t    6      make the plots'
-        print   '\t    7      history plots'
-        print   '\t    whatever else             Exit'
-        #num = int(raw_input("\n\t Select Action :> "))
-        num = 15
-        if num in options.keys():
-            eval(options[num])()
-            num = 10
-
-    print '\n\t END OF GAME!!!\n'
-
+    fp = open('total_phase_space_path.dat','w')
+    np.savetxt(fp, PS_path, fmt='%e', delimiter='\t', newline='\n')
+    fp.flush()
+    fp.close()
 
 def LoadMatrix(filename=False):
     """
@@ -108,8 +112,8 @@ def LoadMatrix(filename=False):
         raise IOError('\n\t It seems that ',filename,' does not exist\n')
 
 
-def get_matrix():
-    global Dens ; global T ; global FH2 ; global t_cool
+def get_matrix(fname):
+    global Dens ; global T ; global FH2 ; global t_cool; global PS_path
     if T==None or Dens==None or FH2==None:
     # load the matrix
 	    LoadMatrix(filename=matrix_Logdelta_LogT_H2)
@@ -117,25 +121,15 @@ def get_matrix():
         LoadMatrix(filename=matrix_Logdelta_LogT_H2_tcool)
 
     #fname = 'time_evolution_log10P4.494.dat'
-    fname = 'time_evolution_log10P3.996.dat'
+    #fname = 'time_evolution_log10P3.996.dat'
     matrix = np.loadtxt(fname,comments='#') #contiene: t - M_a - M_h2 - Log10Rho_a - Log10T - frac_h2 - tcool
     matrix = matrix.T
 
     time = matrix[0,:]
     rho_atom = matrix[3,:]
     t_atom = matrix[4,:]
-    tmat = FH2
+    #tmat = FH2
 
-    #check
-    # print '\n\ttime array\n'
-    # print time
-    # print '\n\tdensity array\n'
-    # print rho_atom
-    # print '\n\ttemperature array\n'
-    # print t_atom
-    # print '\n\tdone\n'
-    #d = 0
-    # tmp = 0
     d = Dens.size
     b = time.size
     count = 0.
@@ -152,10 +146,10 @@ def get_matrix():
                     count += 1.
             if count < 5e-1:
                     count = 1.
-            tmat[j][i] = time_def/count
+            PS_path[j][i] = time_def/count
             time_def = 0.
             count = 0.
-
+    '''
     fp = open('phase_space_path.dat','w')
     np.savetxt(fp, tmat, fmt='%e', delimiter='\t', newline='\n')
     fp.flush()
@@ -163,6 +157,83 @@ def get_matrix():
     #plot_newmatrix('phase_space_path.dat')
     plot_def('phase_space_path.dat')
     print '\n\tFinally done!\n'
+    '''
+
+def plot_interp():
+    global matrix_Logdelta_LogT_H2
+    LoadMatrix(filename=matrix_Logdelta_LogT_H2)
+    global T ; global Dens ; global FH2
+
+    H2 = FH2
+    H2[H2 > 0.] = np.log10(H2[H2 > 0.])
+    v_min = -6
+    v_max = -2.
+    H2[H2 == 0.] = v_min
+    H2[H2 > v_max] = v_max
+    H2[H2 < v_min] = v_min
+    numlev = 15
+    dmag0 = (v_max - v_min) / float(numlev)
+    levels0 = np.arange(numlev) * dmag0 + v_min
+
+    fname = 'time_evolution_log10P4.494.dat'
+    matrix = np.loadtxt(fname,comments='#') #contiene: t - M_a - M_h2 - Log10Rho_a - Log10T - frac_h2 - tcool
+    matrix = matrix.T
+
+    #tmp1 = np.linspace(-27.2, -21, num=300, endpoint=True)
+    #tmp2 = np.linspace(0, 5, num=300, endpoint=True)
+    #tmp3 = np.linspace(0, 1000, num=300, endpoint=True)
+
+    dmax = Dens.max()
+    dmin = Dens.min()
+    tmax = T.max()
+    tmin = T.min()
+
+    time = matrix[0,:]
+    time[time > 0.] = np.log10(time[time > 0.])
+
+    rho_atom = matrix[3,:]
+    rho_atom[rho_atom > dmax] = dmax
+    rho_atom[rho_atom < dmin] = dmin
+
+    t_atom = matrix[4,:]
+    t_atom[t_atom > tmax] = tmax
+    t_atom[t_atom < tmin] = tmin
+
+    #tmat = griddata(Dens, T, time, rho_atom, t_atom)#, interp='linear')
+    tmat = griddata((rho_atom, t_atom), time, (Dens, T), method='cubic')
+    #tmat = griddata(tmp1, tmp2, tmp3, Dens, T, interp='linear')
+
+    wr = open('tmat.dat', 'w')
+    np.savetxt(wr, tmat, fmt='%e',delimiter='\t',newline='\n')
+    wr.flush(); wr.close()
+    vmin = 0.
+    vmax = 7
+    tmat[tmat == 0.] = vmin
+    tmat[tmat > vmax] = vmax; tmat[tmat < vmin] = vmin
+
+    nlev = 6
+    dmag = (vmax - vmin) / float(nlev)
+    levels = np.arange(nlev) * dmag + vmin
+
+    plt.figure()
+
+    plt.contour(Dens, T, tmat, levels, linewidths=0.5, colors='k')
+
+    plt.title('Path')
+    plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
+    cbar = plt.colorbar(figura,format='%3.1f')
+    cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
+    cbar.set_label('time',fontsize=20)
+
+    figura = plt.contourf(Dens,T,H2,levels0,extend='both')
+    cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal', shrink=0.7)
+    #cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
+    cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
+    cbar.set_label('H$_{2}$ fraction',fontsize=20)
+
+    plt.savefig('upgrade_path.pdf')
+    plt.close('all')
+
 
 
 def plot_def(fname):
@@ -236,7 +307,7 @@ def plot_def(fname):
     plt.savefig('composite_path.pdf')
     plt.close('all')
 
-    print '\n\t path.pdf done\n'
+    print '\n\t composite_path.pdf done\n'
 
 
 
