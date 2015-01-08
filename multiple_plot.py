@@ -9,8 +9,8 @@ from scipy.interpolate import griddata
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
 matrix_Logdelta_LogT_H2_tcool = 'matrix_modif_Logdelta_LogT_tcool.dat'
-path_out                      = '/scratch2/dicerbo/plot_test/'
-path_read                     = '/home/dicerbo/output/scratch2/plot_test/toprint/'
+path_out                      = '/scratch2/dicerbo/plot_test/toprint/'
+path_read                     = '/scratch2/dicerbo/plot_test/toprint/'
 # global variables
 redshift          = 19.0
 Hubble            = 0.72
@@ -52,13 +52,14 @@ PS_path    = [[0.]*50 for x in range(50)]
 def main():
     global PS_path
     dirs = os.listdir(path_read)
+    tmp = os.listdir(path_read)
     i = 0
     for a in dirs:
         dirs[i] = path_read + a
         i += 1
 
     wr = open('point.dat', 'w')
-
+    j = 0
     for a in dirs:
         files = os.listdir(a)
         for name in files:
@@ -70,14 +71,27 @@ def main():
             else:
                 continue
 
-    wr.close()
-    fp = open('total_phase_space_path.dat','w')
-    np.savetxt(fp, PS_path, fmt='%e', delimiter='\t', newline='\n')
-    fp.flush()
-    fp.close()
+        namef = path_out+'total_PS_path'+str(tmp[j])+'.dat'
+        fp = open(namef,'w')
+        np.savetxt(fp, PS_path, fmt='%e', delimiter='\t', newline='\n')
+        fp.flush()
+        fp.close()
+        plot_def(path_out+namef)
+        #PS_path = [[0.]*50 for x in range(50)]
+        initialize()
+        j += 1
 
-    plot_def('total_PS_path.dat')
+    wr.close()
+    #plot_def('total_PS_path.dat')
     print "\n\tEXIT!\n"
+
+def initialize():
+    global PS_path
+
+    lst	= range(50)
+    for	i in lst:
+	for j in lst:
+            PS_path[i][j] = 0
 
 def LoadMatrix(filename=False):
     """
@@ -272,20 +286,7 @@ def plot_def(fname):
     path[path < vmin] = vmin
     nlev = 6
     dmag = (vmax - vmin) / float(nlev)
-    levels = np.arange(nlev) * dmag + vmin
-    '''
-    path2 = np.loadtxt('phase_space_path.dat.old',comments='#')
-    path2[path2 > 0.] = np.log10(path2[path2 > 0.])
-    path2[path2 == 0.] = vmin
-    path2[path2 > vmax] = vmax
-    path2[path2 < vmin] = vmin
 
-    path3 = np.loadtxt('phase_space_pathP4.992.dat',comments='#')
-    path3[path3 > 0.] = np.log10(path3[path3 > 0.])
-    path3[path3 == 0.] = vmin
-    path3[path3 > vmax] = vmax
-    path3[path3 < vmin] = vmin
-    '''
     plt.figure()
 
     figura = plt.contour(Dens,T,path,levels,extend='both', linewidths=0.3, cmap=cm.gray)
@@ -297,21 +298,17 @@ def plot_def(fname):
     cbar = plt.colorbar(figura,format='%3.1f')
     cbar.set_ticks(np.linspace(vmin,vmax,num=levels.size,endpoint=True))
     cbar.set_label('time',fontsize=20)
-    # figura = plt.contour(Dens,T,path2,levels,extend='both', alpha=0.8)
-    # figura = plt.contour(Dens,T,path2,levels,extend='both', linewidths=0.3, cmap=cm.gray)
-    # figura = plt.contour(Dens,T,path3,levels,extend='both', linewidths=0.3, cmap=cm.gray)
 
-    # figura = plt.contourf(Dens,T,H2,levels0,extend='both', linewidths=0.8, cmap=cm.gray, alpha=0.5)
     figura = plt.contourf(Dens,T,H2,levels0,extend='both')
     cbar = plt.colorbar(figura,format='%3.1f', orientation='horizontal', shrink=0.7)
     #cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
     cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
     cbar.set_label('H$_{2}$ fraction',fontsize=20)
-
-    plt.savefig('composite_path.pdf')
+    namef = fname+'.jpg'
+    plt.savefig(namef)
     plt.close('all')
 
-    print '\n\t composite_path.pdf done\n'
+    print '\n\t composite_path.jpg done\n'
 
 
 
