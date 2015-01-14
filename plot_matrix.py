@@ -9,12 +9,14 @@ from scipy.interpolate import griddata
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
 matrix_Logdelta_LogT_H2_tcool = 'matrix_modif_Logdelta_LogT_tcool.dat'
-path_in                       = '/scratch2/dicerbo/plot_test/toprint/'
+path_in                       = '/home/pierluigi/tesi_magistrale/plot_test/plot_test/'
 path_read                     = '/scratch2/dicerbo/plot_test/firstmat/'
-path_out                      = '/scratch2/dicerbo/plot_test/boundary/'
+path_out                      = '/home/pierluigi/tesi_magistrale/plot_test/plot_test/boundary/'
 path_matrix                   = '/scratch2/dicerbo/plot_test/matrix/'
 path_file                     = '/scratch2/dicerbo/plot_test/toprint/t700/time_evolution_log10P4.7.dat'
 path_file2                    = '/scratch2/dicerbo/plot_test/toprint/t700/time_evolution_log10P3.5.dat'
+#path_in                       = '/scratch2/dicerbo/plot_test/toprint/'
+#path_out                      = '/scratch2/dicerbo/plot_test/boundary/'
 
 # global variables
 redshift          = 19.0
@@ -64,9 +66,10 @@ def main():
     '''
     dirs = os.listdir(path_in)
     for d in dirs:
-        print '\n\tStart working on '+ d
-        adjust(path_in+d+'/')
-        plot_def(d)
+        #print '\n\tStart working on '+ d
+        if string.count(d, 't700') != 0:
+            #adjust(path_in+d+'/')
+            plot_def(d)
         print '\n\tEnd working on ' + d
 
     print '\n\tFinally End\n'
@@ -85,10 +88,10 @@ def adjust(path):
     #print str(tmin)+'\t'+str(tmax)
     #print str(dmin)+'\t'+str(dmax)
     files = os.listdir(path)
-    directory = path[36:-1]
+    directory = path[len(path_in):-1]
     for name in files:
         if string.count(name, 'time') != 0:
-            print '\n\tWorking on '+name
+            #print '\n\tWorking on '+name
             matrix = np.loadtxt(path+name, comments = '#')
             if matrix.size < 4:
                 print '\n\t'+name+' empty\n'
@@ -154,7 +157,7 @@ def plot_def(directory):
             plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#',  marker='.', newfig=False)
 
     plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
-    newname = path_out + 'path_' + directory + '.jpg'
+    newname = path_out + 'path_' + directory + '.png'
     plt.savefig(newname)
     plt.close('all')
     print '\n\t'+newname[len(path_out):]+' done\n'
