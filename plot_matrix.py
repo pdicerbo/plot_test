@@ -86,8 +86,6 @@ def adjust(path):
 
     tmin = T.min(); tmax = T.max()
     dmin = Dens.min(); dmax = Dens.max()
-    #print str(tmin)+'\t'+str(tmax)
-    #print str(dmin)+'\t'+str(dmax)
     files = os.listdir(path)
     directory = path[len(path_in):-1]
     for name in files:
