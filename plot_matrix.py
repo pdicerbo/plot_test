@@ -5,6 +5,7 @@ from bisect import bisect_left # for BilinearInterpolation
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from scipy.interpolate import griddata
+import colorsys
 #from matplotlib.mlab import griddata
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
@@ -151,10 +152,25 @@ def plot_def(directory):
     
     #path's plot
     files = os.listdir(path_out)
+    fls = files
+    press = np.zeros(len(files), dtype = float)
+    j = 0
     for name in files:
-        if string.count(name, 'boundary') != 0 and string.count(name, directory) != 0:
-            print '\n\tPlotting ' + name + ' file'
-            plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#',  marker='.', newfig=False)
+        if string.count(name, 'boundary') != 0 and string.count(name, directory) != 0 and string.count(name,'jpg') == 0:
+            fls[j] = name
+            press[j] = float(name[(len(name)-7):-4])
+            j += 1
+
+    filedef = fls[:(j-len(files))]
+    pdef = press[:(j-len(files))]
+
+    pmax = pdef.max()
+    cdef = [colorsys.hsv_to_rgb(x*1.0/pmax, x*0.5/pmax, x*0.5/pmax) for x in pdef]
+    k = 0
+    for name in filedef:
+        print '\n\tPlotting ' + name + ' file'
+        plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#',  marker='.', mfc = cdef[k], newfig=False)
+        k += 1
 
     plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
     newname = path_out + 'path_' + directory + '.png'
