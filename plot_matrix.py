@@ -138,13 +138,15 @@ def plot_def(directory):
     levels0 = np.arange(numlev) * dmag0 + v_min
 
 
-    plt.figure()    
+    plt.figure()
     plt.title('Paths')
     figura = plt.contourf(Dens,T,H2,levels0,extend='both', cmap = cm.hot)
-    cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
-    cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
-    cbar.set_label('H$_{2}$ fraction',fontsize=20)
-    
+    #figura = plt.contourf(Dens,T,H2,levels0, cmap = cm.hot)
+    #cbaxes = fig.add_axes([0.0001, 0.1, 0.008, 0.8])
+    #cbar = plt.colorbar(figura, format='%3.1f', shrink = 0.5)
+    #cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
+    #cbar.set_label('H$_{2}$ fraction',fontsize=10)
+    #cbar.ax.yaxis.set_ticks_position('left')
     #path's plot
     files = os.listdir(path_out)
     fls = files
@@ -169,11 +171,20 @@ def plot_def(directory):
     k = 0
     for name in filedef:
         print '\n\tPlotting ' + name + ' file'
-        cumulative_plot = plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#', color = cdef[k],
-                     marker='.', mfc = cdef[k], mec = cdef[k], newfig=False)
+        plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#', color = cdef[k],
+                     marker='.', mfc = cdef[k], mec = cdef[k], label = 'Log10P = '+str(pdef[k]), newfig=False)
         k += 1
     #plt.colorbar(cumulative_plot, orientation='horizontal', shrink=0.7)
     #plt.colorbar.add_lines(pdef, cdef, linewidths = .5)
+    plt.legend(bbox_to_anchor=(1, 1), loc=2, borderaxespad=0., fontsize = 9)
+    '''
+    if pdef.size % 2 == 0:
+        ncol = pdef.size / 2
+    else:
+        ncol = pdef.size / 2 + 1
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=ncol, mode="expand", borderaxespad=0., fontsize = 8)
+    '''
+    #plt.legend(bbox_to_anchor=(-0.1, 1.), loc=2, borderaxespad=0., fontsize = 10)
     plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
     newname = path_out + 'path_' + directory + '.png'
     plt.savefig(newname)
