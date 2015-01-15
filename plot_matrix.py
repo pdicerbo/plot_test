@@ -1,12 +1,9 @@
 import numpy as np
 import os
 import string
-from bisect import bisect_left # for BilinearInterpolation
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from scipy.interpolate import griddata
 import colorsys
-#from matplotlib.mlab import griddata
+import matplotlib.cm as cm
 
 matrix_Logdelta_LogT_H2       = 'matrix_modif_Logdelta_LogT_H2.dat'
 matrix_Logdelta_LogT_H2_tcool = 'matrix_modif_Logdelta_LogT_tcool.dat'
@@ -143,7 +140,7 @@ def plot_def(directory):
 
     plt.figure()    
     plt.title('Paths')
-    figura = plt.contourf(Dens,T,H2,levels0,extend='both')
+    figura = plt.contourf(Dens,T,H2,levels0,extend='both', cmap = cm.hot)
     cbar = plt.colorbar(figura,format='%3.1f', shrink=0.7)
     cbar.set_ticks(np.linspace(v_min,v_max,num=levels0.size,endpoint=True))
     cbar.set_label('H$_{2}$ fraction',fontsize=20)
@@ -163,13 +160,20 @@ def plot_def(directory):
     pdef = press[:(j-len(files))]
 
     pmax = pdef.max()
-    cdef = [colorsys.hsv_to_rgb(x*1.0/pmax, x*0.5/pmax, x*0.5/pmax) for x in pdef]
+    pmin = pdef.min()
+    h = np.zeros(pdef.size, dtype = float)
+    ind = 0
+    for p in pdef:
+        h[ind] = (float(p-pmin) / (pmax-pmin))*330.; ind += 1
+    cdef = [colorsys.hsv_to_rgb(x/360., 1., 1.) for x in h]
     k = 0
     for name in filedef:
         print '\n\tPlotting ' + name + ' file'
-        plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#',  marker='.', mfc = cdef[k], newfig=False)
+        cumulative_plot = plt.plotfile(path_out+name, delimiter = '\t', cols=(1, 2), comments='#', color = cdef[k],
+                     marker='.', mfc = cdef[k], mec = cdef[k], newfig=False)
         k += 1
-
+    #plt.colorbar(cumulative_plot, orientation='horizontal', shrink=0.7)
+    #plt.colorbar.add_lines(pdef, cdef, linewidths = .5)
     plt.xlabel('log10 $Rho$',fontsize=20) ; plt.ylabel('Log10 T[k]',fontsize=20)
     newname = path_out + 'path_' + directory + '.png'
     plt.savefig(newname)
